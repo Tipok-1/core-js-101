@@ -199,11 +199,32 @@ function extractEmails(str) {
  *
  */
 
-function getRectangleString(/* width, height */) {
-  throw new Error('Not implemented');
+function getRectangleString(width, height) {
+  let rect = '';
+  for (let i = 0; i <= height - 1; i += 1) {
+    if (i === 0) {
+      rect += '┌';
+      for (let j = 0; j < width - 2; j += 1) {
+        rect += '─';
+      }
+      rect += '┐';
+    } else if (i === height - 1) {
+      rect += '└';
+      for (let j = 0; j < width - 2; j += 1) {
+        rect += '─';
+      }
+      rect += '┘';
+    } else {
+      rect += '│';
+      for (let j = 0; j < width - 2; j += 1) {
+        rect += ' ';
+      }
+      rect += '│';
+    }
+    rect += '\n';
+  }
+  return rect;
 }
-
-
 /**
  * Encode specified string with ROT13 cipher
  * See details:  https://en.wikipedia.org/wiki/ROT13
@@ -220,10 +241,24 @@ function getRectangleString(/* width, height */) {
  *    => 'NOPQRSTUVWXYZABCDEFGHIJKLMnopqrstuvwxyzabcdefghijklm'
  *
  */
-function encodeToRot13(/* str */) {
-  throw new Error('Not implemented');
+function encodeToRot13(str) {
+  let num = str.split(' ');
+  for (let i = 0; i < num.length; i += 1) {
+    num[i] = num[i].split('').map((st) => {
+      if (st.charCodeAt() < 64 || (st.charCodeAt() > 90 && st.charCodeAt() < 97)
+      || st.charCodeAt() > 122) {
+        return st;
+      }
+      if ((st.charCodeAt() + 13 < 123 && st.charCodeAt() > 96)
+      || (st.charCodeAt() > 64 && st.charCodeAt() + 13 < 91)) {
+        return String.fromCharCode(st.charCodeAt() + 13);
+      }
+      return String.fromCharCode(st.charCodeAt() - 13);
+    }).join('');
+  }
+  num = num.join(' ');
+  return num;
 }
-
 /**
  * Returns true if the value is string; otherwise false.
  * @param {string} value
@@ -237,8 +272,11 @@ function encodeToRot13(/* str */) {
  *   isString('test') => true
  *   isString(new String('test')) => true
  */
-function isString(/* value */) {
-  throw new Error('Not implemented');
+function isString(value) {
+  if (value && (typeof value === 'string' || value instanceof String)) {
+    return true;
+  }
+  return false;
 }
 
 
@@ -266,10 +304,32 @@ function isString(/* value */) {
  *   'Q♠' => 50
  *   'K♠' => 51
  */
-function getCardId(/* value */) {
-  throw new Error('Not implemented');
+function getCardId(value) {
+  const mas = value[value.length - 1];
+  let n = 0;
+  if (mas === '♣') {
+    n = 0;
+  }
+  if (mas === '♦') {
+    n = 13;
+  }
+  if (mas === '♥') {
+    n = 26;
+  }
+  if (mas === '♠') {
+    n = 39;
+  }
+  const letters = {
+    A: 0,
+    J: 10,
+    Q: 11,
+    K: 12,
+  };
+  if (value[0] in letters) {
+    return letters[value[0]] + n;
+  }
+  return parseInt(value, 0) - 1 + n;
 }
-
 
 module.exports = {
   concatenateStrings,
