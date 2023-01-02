@@ -218,8 +218,22 @@ function findFirstSingleChar(str) {
  *   5, 3, true, true   => '[3, 5]'
  *
  */
-function getIntervalString(/* a, b, isStartIncluded, isEndIncluded */) {
-  throw new Error('Not implemented');
+function getIntervalString(a, b, isStartIncluded, isEndIncluded) {
+  let res = '';
+  if (isStartIncluded) {
+    res += '[';
+  } else {
+    res += '(';
+  }
+  res += Math.min(a, b);
+  res += ', ';
+  res += Math.max(a, b);
+  if (isEndIncluded) {
+    res += ']';
+  } else {
+    res += ')';
+  }
+  return res;
 }
 
 
@@ -235,8 +249,8 @@ function getIntervalString(/* a, b, isStartIncluded, isEndIncluded */) {
  * 'rotator' => 'rotator'
  * 'noon' => 'noon'
  */
-function reverseString(/* str */) {
-  throw new Error('Not implemented');
+function reverseString(str) {
+  return [...str].map((item) => [...item].reverse().join('')).reverse().join('');
 }
 
 
@@ -252,8 +266,8 @@ function reverseString(/* str */) {
  *   87354 => 45378
  *   34143 => 34143
  */
-function reverseInteger(/* num */) {
-  throw new Error('Not implemented');
+function reverseInteger(num) {
+  return +[...String(num)].reverse().join('');
 }
 
 
@@ -277,8 +291,23 @@ function reverseInteger(/* num */) {
  *   5436468789016589 => false
  *   4916123456789012 => false
  */
-function isCreditCardNumber(/* ccn */) {
-  throw new Error('Not implemented');
+function isCreditCardNumber(ccn) {
+  let check = 0;
+  const array = ccn.toString().split('').reverse().map(Number);
+  for (let i = 0; i < array.length; i += 1) {
+    if (i % 2 !== 0) {
+      const mult = array[i] * 2;
+      const sum = mult.toString().split('').map(Number);
+      if (mult > 9) {
+        check += sum[0] + sum[1];
+      } else {
+        check += mult;
+      }
+    } else {
+      check += array[i];
+    }
+  }
+  return check % 10 === 0;
 }
 
 /**
@@ -295,8 +324,12 @@ function isCreditCardNumber(/* ccn */) {
  *   10000 ( 1+0+0+0+0 = 1 ) => 1
  *   165536 (1+6+5+5+3+6 = 26,  2+6 = 8) => 8
  */
-function getDigitalRoot(/* num */) {
-  throw new Error('Not implemented');
+function getDigitalRoot(num) {
+  const n = (+[...String(num)].reduce((cur, item) => +item + cur, 0));
+  if ([...String(n)].length > 1) {
+    return getDigitalRoot(n);
+  }
+  return n;
 }
 
 
@@ -321,8 +354,28 @@ function getDigitalRoot(/* num */) {
  *   '{)' = false
  *   '{[(<{[]}>)]}' = true
  */
-function isBracketsBalanced(/* str */) {
-  throw new Error('Not implemented');
+function isBracketsBalanced(str) {
+  const stack = [];
+  const breckets = Array.from(str);
+  const OPEN_BRECKET = ['{', '[', '(', '<'];
+  const CLOSE_BRECKET_PAIR = {
+    '}': '{',
+    ']': '[',
+    ')': '(',
+    '>': '<',
+  };
+
+  for (let i = 0; i < breckets.length; i += 1) {
+    let push = false;
+    const brecket = breckets[i];
+
+    if (OPEN_BRECKET.includes(brecket)) push = true;
+    else if (stack[stack.length - 1] !== CLOSE_BRECKET_PAIR[brecket]) {
+      push = true;
+    } if (push) stack.push(brecket);
+    else stack.pop();
+  }
+  return !stack.length;
 }
 
 
@@ -346,8 +399,8 @@ function isBracketsBalanced(/* str */) {
  *    365, 4  => '11231'
  *    365, 10 => '365'
  */
-function toNaryString(/* num, n */) {
-  throw new Error('Not implemented');
+function toNaryString(num, n) {
+  return num.toString(n);
 }
 
 
@@ -363,8 +416,40 @@ function toNaryString(/* num, n */) {
  *   ['/web/assets/style.css', '/.bin/mocha',  '/read.me'] => '/'
  *   ['/web/favicon.ico', '/web-scripts/dump', '/verbalizer/logs'] => '/'
  */
-function getCommonDirectoryPath(/* pathes */) {
-  throw new Error('Not implemented');
+function getCommonDirectoryPath(pathes) {
+  const splitPath = (path) => path.split(/(\/)/g).filter((n) => n);
+
+  const getCommotPath = (common, pathA, pathB) => {
+    const prewRes = [...common];
+    const newRes = [];
+
+    for (let i = 0; i < pathA.length; i += 1) {
+      if (pathA[i] === pathB[i]) {
+        if (!prewRes[i]) {
+          newRes[i] = pathA[i];
+        } else if (prewRes[i] !== pathA[i]) {
+          return newRes;
+        }
+      } else {
+        return newRes;
+      }
+    }
+
+    return newRes;
+  };
+
+  let common = [];
+
+  for (let i = 0; i < pathes.length; i += 1) {
+    const pathA = splitPath(pathes[i]);
+
+    for (let j = i + 1; j < pathes.length; j += 1) {
+      const pathB = splitPath(pathes[j]);
+      common = [...getCommotPath(common, pathA, pathB)];
+    }
+  }
+
+  return common.join('');
 }
 
 
@@ -386,20 +471,36 @@ function getCommonDirectoryPath(/* pathes */) {
  *                         [ 6 ]]
  *
  */
-function getMatrixProduct(/* m1, m2 */) {
-  throw new Error('Not implemented');
+function getMatrixProduct(m1, m2) {
+  const resArr = [];
+  resArr.length = m1.length;
+
+  for (let r = 0; r < m1.length; r += 1) {
+    resArr[r] = [];
+    resArr[r].length = m2[0].length;
+
+    for (let c = 0; c < m2[0].length; c += 1) {
+      resArr[r][c] = 0;
+
+      for (let i = 0; i < m1[0].length; i += 1) {
+        resArr[r][c] += m1[r][i] * m2[i][c];
+      }
+    }
+  }
+
+  return resArr;
 }
 
 
 /**
- * Returns the evaluation of the specified tic-tac-toe position.
+ * Returns the evaluation of the specified tic-tac-toepos.
  * See the details: https://en.wikipedia.org/wiki/Tic-tac-toe
  *
- * Position is provides as 3x3 array with the following values: 'X','0', undefined
- * Function should return who is winner in the current position according to the game rules.
+ *pos is provides as 3x3 array with the following values: 'X','0', undefined
+ * Function should return who is winner in the currentpos according to the game rules.
  * The result can be: 'X','0',undefined
  *
- * @param {array} position
+ * @param {array}pos
  * @return {string}
  *
  * @example
@@ -421,11 +522,21 @@ function getMatrixProduct(/* m1, m2 */) {
  *    [    ,   ,    ]]
  *
  */
-function evaluateTicTacToePosition(/* position */) {
-  throw new Error('Not implemented');
+function evaluateTicTacToePosition(pos) {
+  for (let r = 0; r < pos.length; r += 1) {
+    if (pos[r][0] && pos[r][0] === pos[r][1] && pos[r][1] === pos[r][2]) {
+      return pos[r][0];
+    } if (pos[0][r] && pos[0][r] === pos[1][r] && pos[1][r] === pos[2][r]) {
+      return pos[0][r];
+    }
+  }
+  if (pos[1][1] && pos[0][0] === pos[1][1] && pos[1][1] === pos[2][2]) {
+    return pos[1][1];
+  } if (pos[1][1] && pos[2][0] === pos[1][1] && pos[1][1] === pos[0][2]) {
+    return pos[1][1];
+  }
+  return undefined;
 }
-
-
 module.exports = {
   getFizzBuzz,
   getFactorial,
