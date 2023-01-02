@@ -111,35 +111,116 @@ function fromJSON(proto, json) {
  *  For more examples see unit tests.
  */
 
+class CssSelectors {
+  constructor() {
+    this.selector = '';
+    this.ShouldCheck = {
+      element: 0,
+      id: 0,
+      pseudoElement: 0,
+    };
+    this.Order = 0;
+    this.errors = {
+      onlyOneTime: 'Element, id and pseudo-element should not occur more then one time inside the selector',
+      selectorsOrder: 'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element',
+    };
+  }
+
+  checkSelectorOnlyOneTimeOccur(selector) {
+    const { onlyOneTime } = this.errors;
+    if (this.ShouldCheck[selector]) throw new Error(onlyOneTime);
+  }
+
+  checkSelectorsOrder(defOrder) {
+    const { Order } = this;
+    const { selectorsOrder } = this.errors;
+    if (Order > defOrder) throw new Error(selectorsOrder);
+  }
+
+  element(value) {
+    const defOrder = 1;
+
+    this.checkSelectorOnlyOneTimeOccur('element');
+    this.checkSelectorsOrder(defOrder);
+
+    this.selector += value;
+    this.ShouldCheck.element = 1;
+    this.Order = defOrder;
+    return this;
+  }
+
+  id(value) {
+    const defOrder = 2;
+
+    this.checkSelectorOnlyOneTimeOccur('id');
+    this.checkSelectorsOrder(defOrder);
+
+    this.selector += `#${value}`;
+    this.ShouldCheck.id = 1;
+    this.Order = defOrder;
+    return this;
+  }
+
+  class(value) {
+    const defOrder = 3;
+
+    this.checkSelectorsOrder(defOrder);
+
+    this.selector += `.${value}`;
+    this.Order = defOrder;
+    return this;
+  }
+
+  attr(value) {
+    const defOrder = 4;
+
+    this.checkSelectorsOrder(defOrder);
+
+    this.selector += `[${value}]`;
+    this.Order = defOrder;
+    return this;
+  }
+
+  pseudoClass(value) {
+    const defOrder = 5;
+
+    this.checkSelectorsOrder(defOrder);
+
+    this.selector += `:${value}`;
+    this.Order = defOrder;
+    return this;
+  }
+
+  pseudoElement(value) {
+    const defOrder = 6;
+
+    this.checkSelectorOnlyOneTimeOccur('pseudoElement');
+    this.checkSelectorsOrder(defOrder);
+
+    this.selector += `::${value}`;
+    this.ShouldCheck.pseudoElement = 1;
+    this.Order = defOrder;
+    return this;
+  }
+
+  combine(s1, combinator, s2) {
+    this.selector = `${s1.selector} ${combinator} ${s2.selector}`;
+    return this;
+  }
+
+  stringify() {
+    return this.selector;
+  }
+}
+
 const cssSelectorBuilder = {
-
-  element(/* value */) {
-    throw new Error('Not implemented');
-  },
-
-  id(/* value */) {
-    throw new Error('Not implemented');
-  },
-
-  class(/* value */) {
-    throw new Error('Not implemented');
-  },
-
-  attr(/* value */) {
-    throw new Error('Not implemented');
-  },
-
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
-  },
-
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
-  },
-
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
-  },
+  element: (value) => new CssSelectors().element(value),
+  id: (value) => new CssSelectors().id(value),
+  class: (value) => new CssSelectors().class(value),
+  attr: (value) => new CssSelectors().attr(value),
+  pseudoClass: (value) => new CssSelectors().pseudoClass(value),
+  pseudoElement: (value) => new CssSelectors().pseudoElement(value),
+  combine: (s1, combinator, s2) => new CssSelectors().combine(s1, combinator, s2),
 };
 
 module.exports = {
